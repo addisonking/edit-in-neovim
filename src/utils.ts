@@ -13,6 +13,8 @@ export type SpawnProcessOptions = child_process.SpawnOptionsWithoutStdio & {
 import systeminformation from "systeminformation";
 
 const windows = process.platform === 'win32';
+const darwin = process.platform === 'darwin';
+
 export const searchDirs = windows ? [] : [
   '/usr/local/bin',
   '/usr/bin',
@@ -20,6 +22,16 @@ export const searchDirs = windows ? [] : [
   '/home/linuxbrew/.linuxbrew/bin',
   '/snap/nvim/current/usr/bin',
 ];
+
+const macOsAppPaths: Record<string, string> = {
+  'alacritty': '/Applications/Alacritty.app/Contents/MacOS/alacritty',
+  'kitty': '/Applications/kitty.app/Contents/MacOS/kitty',
+  'wezterm': '/Applications/WezTerm.app/Contents/MacOS/wezterm',
+  'iterm': '/Applications/iTerm.app/Contents/MacOS/iTerm2',
+  'iterm2': '/Applications/iTerm.app/Contents/MacOS/iTerm2',
+  'terminal': '/System/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal',
+  'ghostty': '/Applications/Ghostty.app/Contents/MacOS/ghostty',
+};
 
 export async function isPortInUse(port: string) {
   const networkConnections = await systeminformation.networkConnections();
@@ -96,6 +108,18 @@ function verifyPath(name: string): string | undefined {
 export function searchForBinary(name: string): string | undefined {
   if (isAbsolute(name)) {
     return verifyPath(name);
+  }
+
+  const nameLower = name.toLowerCase();
+
+  if (darwin) {
+    const macAppPath = macOsAppPaths[nameLower];
+    if (macAppPath) {
+      const verifiedMacPath = verifyPath(macAppPath);
+      if (verifiedMacPath) {
+        return verifiedMacPath;
+      }
+    }
   }
 
   const paths = new Set<string>();

@@ -17,11 +17,17 @@ export default class Neovim {
     this.adapter = adapter;
     this.settings = settings;
     this.apiKey = apiKey;
-    this.termBinary = searchForBinary(settings.terminal);
     this.nvimBinary = undefined;
 
+    if (settings.pathToTerminal) {
+      this.termBinary = settings.pathToTerminal;
+      console.log(`Using manual terminal path: ${this.termBinary}`);
+    } else {
+      this.termBinary = searchForBinary(settings.terminal);
+    }
+
     if (!this.termBinary) {
-      console.warn(`Could find binary for ${settings.terminal}, double check it's on your PATH`)
+      console.warn(`Could not find binary for ${settings.terminal}, double check it's on your PATH or set a manual path in settings`)
     }
 
     if (this.settings.pathToBinary) {

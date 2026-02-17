@@ -4,6 +4,7 @@ import Neovim from "./Neovim";
 
 export interface EditInNeovimSettings {
   terminal: string;
+  pathToTerminal: string;
   listenOn: string;
   openNeovimOnLoad: boolean;
   supportedFileTypes: string[];
@@ -13,6 +14,7 @@ export interface EditInNeovimSettings {
 
 export const DEFAULT_SETTINGS: EditInNeovimSettings = {
   terminal: process.env.TERMINAL || "alacritty",
+  pathToTerminal: "",
   listenOn: "127.0.0.1:2006",
   openNeovimOnLoad: true,
   supportedFileTypes: ["txt", "md", "css", "js", "ts", "tsx", "jsx", "json"],
@@ -45,6 +47,21 @@ export default class EditInNeovimSettingsTab extends PluginSettingTab {
           .setValue(this.plugin.settings.terminal)
           .onChange(async (value) => {
             this.plugin.settings.terminal = value;
+            await this.plugin.saveSettings();
+          }),
+      );
+
+    new Setting(containerEl)
+      .setName("Path to terminal binary")
+      .setDesc(
+        "Manual override for detecting terminal binary. Use this if the plugin can't find your terminal automatically (e.g., /Applications/Alacritty.app/Contents/MacOS/alacritty on macOS). Requires reload.",
+      )
+      .addText((text) =>
+        text
+          .setPlaceholder("/path/to/terminal/binary")
+          .setValue(this.plugin.settings.pathToTerminal)
+          .onChange(async (value) => {
+            this.plugin.settings.pathToTerminal = value;
             await this.plugin.saveSettings();
           }),
       );
